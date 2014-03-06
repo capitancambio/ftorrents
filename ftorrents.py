@@ -72,7 +72,6 @@ class TorrentDowner:
 		fDowns.close()
 		ignored=[]
 		downloaded=[]
-                print el
 		for ep in el:
 			try:
 				if not ep.title in gotchas:
