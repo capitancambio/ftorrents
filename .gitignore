@@ -36,6 +36,6 @@ nosetests.xml
 .pydevproject
 
 #vim
-.sw?
+*.sw?
 #other
 torrent_files
