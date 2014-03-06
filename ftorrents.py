@@ -20,10 +20,21 @@ hand.setLevel(logging.DEBUG)
 formatter = logging.Formatter("[%(name)s] - %(levelname)s - %(message)s")
 hand.setFormatter(formatter)
 logger.addHandler(hand)
+hand = logging.StreamHandler()
+hand.setLevel(logging.DEBUG);
+logger.addHandler(hand);
+
+class Config:
+
+        def __init__(self):
+                self.cache_file='/home/javi/.ftorrent/downloads'
+                self.rss_url='http://showrss.info/rss.php?user_id=116775&hd=null&proper=null&namespaces=true&magnets=false'
+                self.download_dir="/home/javi/src/ftorrents/torrent_files2/"
+
 
 class TorrentDowner:
-        def __init__(self):
-                pass
+        def __init__(self,conf):
+                self.conf=conf
 
         def openTransmission(self,n,action):
                 assert action == "default"
@@ -57,55 +68,54 @@ class TorrentDowner:
                         logging.getLogger("ftorrents").warning(err)	
                 pass
 
+        
         def getTorrents(self):
                 logging.getLogger("ftorrents").debug("Starting to download torrents")
                 #config
-                FILE_DOWNS='/home/javi/.ftorrent/downloads'
-                RSS_URL='http://showrss.info/rss.php?user_id=116775&hd=null&proper=null&namespaces=true&magnets=false'
-                DOWN_DIR="/home/javi/src/ftorrents/torrent_files/"
                 #DOWN_DIR="/tmp/"
-                fl=FeedLoader(RSS_URL)
-                el=fl.load()
-                fDowns=open(FILE_DOWNS,'r')
-                gotchas=pickle.load(fDowns)
-                #gotchas=set()
+                episodes=FeedLoader(self.conf.rss_url).load()
+                fDowns=open(self.conf.cache_file,'r')
+                #gotchas=pickle.load(fDowns)
+                gotchas=set();
                 fDowns.close()
                 ignored=[]
                 downloaded=[]
-                for ep in el:
+                for episode in episodes:
                         try:
-                                if not ep.title in gotchas:
+                                if not episode.title in gotchas:
 
-                                        logger.debug("episode: " + ep.title) 
-                                        logger.debug("Downloading: " + ep.link) 
-                                        tData=urllib2.urlopen(ep.link,None,10)
+                                        logger.debug("episodeisode: " + episode.title) 
+                                        logger.debug("Downloading: " + episode.link) 
+
+                                        tData=urllib2.urlopen(episode.link,None,10)
                                         #control gzipped data
                                         if tData.info().get('Content-Encoding') == 'gzip':
                                                 logger.debug("torrent file compressed ") 
                                                 buf = StringIO( tData.read())
                                                 f = gzip.GzipFile(fileobj=buf)
                                                 tData = f	
-                                        logger.debug("Done: " + ep.link) 
-                                        tFile=file(DOWN_DIR+ep.title+".torrent",'w')
+                                        logger.debug("Done: " + episode.link) 
+                                        tFile=file(self.conf.download_dir+episode.title+".torrent",'w')
                                         tFile.write(tData.read())
                                         tFile.close()
                                         tData.close()
-                                        logging.getLogger("ftorrents").debug("Downloaded "+ep.title)
-                                        gotchas.add(ep.title)
-                                        downloaded.append(ep)
+                                        logging.getLogger("ftorrents").debug("Downloaded "+episode.title)
+                                        gotchas.add(episode.title)
+                                        downloaded.append(episode)
                                 else:
-                                        ignored.append(ep)
-                                        logging.getLogger("ftorrents").debug("Ignoring "+ep.title)
+                                        ignored.append(episode)
+                                        logging.getLogger("ftorrents").debug("Ignoring "+episode.title)
 
                         except Exception as e:
                                 logging.getLogger("ftorrents").warning(type(e))
                                 logging.getLogger("ftorrents").warning(str(e))
 
-                fDowns=open(FILE_DOWNS,'w')
-                pickle.dump(gotchas,fDowns)
+                fDowns=open(self.conf.cache_file,'w')
+                #pickle.dump(gotchas,fDowns)
                 fDowns.close()
+                msg="Downloaded "+str(len(downloaded))+" torrents \n"
+                logger.info(msg)
                 if len(downloaded)>0:	
-                        msg="Downloaded "+str(len(downloaded))+" torrents \n"
                         self.sendMessage(msg)
 
 class FeedLoader:
@@ -115,22 +125,13 @@ class FeedLoader:
 
         def load(self):
                 d=feedparser.parse(self.url)
-                eparser=EpisodeParser(d.namespaces.keys()[0])
-                elist=eparser.episodeList(d);
-                return elist
+                return self.episodes(d.namespaces.keys()[0],d);
 
-
-class EpisodeParser:
-        def __init__(self,namespace):
-                self.namespace=namespace
-
-        def episodeList(self,feed):
+        def episodes(self,namespace,feed):
                 eList=[]
                 for entry in feed.entries:
                         e=Episode()
-                        e.show_id=getattr(entry   , self.namespace+'_showid')
-                        e.show_name=getattr(entry , self.namespace+'_showname')
-                        e.id=getattr(entry        , self.namespace+'_episode')
+                        e.id=getattr(entry, namespace+'_episode')
                         e.date=entry.published
                         e.title=entry.title
                         e.link=entry.link;
@@ -140,8 +141,6 @@ class EpisodeParser:
 
 class Episode (object):
         def __init__(self):
-                self.show_id=""
-                self.show_name=""
                 self.id=""
                 self.title=""
                 self.date=""
@@ -149,13 +148,13 @@ class Episode (object):
 
 
         def __str__(self):
-                s="Show id:"+self.show_id+"\n"
-                s+="Show name:"+self.show_name+"\n"
                 s+="Episode id:"+self.id+"\n"
                 s+="Episode:"+self.title+"\n"
                 s+="Date:"+self.date+"\n"
                 s+="Torrent:"+self.link+"\n"
                 return s
 
+
 if __name__ == "__main__":
-        TorrentDowner().getTorrents()
+
+        TorrentDowner(Config()).getTorrents()
