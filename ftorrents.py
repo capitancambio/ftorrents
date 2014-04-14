@@ -35,12 +35,19 @@ def config_file():
         return os.path.join(config_folder(),"cnf.yml")
 
 def load_config():
+        logger.debug("Loading config")
         #check if the config folder exsists if not create it
+        cnf=None
         if not os.path.isfile(config_file()):
-                return create_config()
+                logger.debug("Config file not found")
+                cnf=create_config()
         else:
-               return yaml.load(config_file()) 
+                cnf=yaml.load(config_file()) 
+        logger.info("Configuration loaded %s"%cnf)
+        return cnf
+
 def create_config():
+        logger.info("Creating default config file %s"%config_file())
         cnf=Config(os.path.join(config_folder(),"cache"), "not_set",os.path.join(config_folder(),"torrent_files"))
         distutils.dir_util.mkpath(config_folder())
         with open(os.path.join(config_folder(),"cnf.yml")) as f:
@@ -55,45 +62,46 @@ class Config:
                 self.rss_url      = rss_url
                 self.download_dir = download_dir 
 
-        
-
+        def __repr__(self):
+                return "%s(%s,%s,%s)" % (self.__class__, self.cache_file,self.rss_url,self.download_dir)
+                
 
 
 class TorrentDowner:
         def __init__(self,conf):
                 self.conf=conf
 
-        def openTransmission(self,n,action):
-                assert action == "default"
-                try:
-                        os.popen2("transmission-gtk")
-                        logging.getLogger("ftorrents").debug("Transmision open!")	
-                except Exception as err:
-                        logging.getLogger("ftorrents").warning(err)
+        #def openTransmission(self,n,action):
+                #assert action == "default"
+                #try:
+                        #os.popen2("transmission-gtk")
+                        #logging.getLogger("ftorrents").debug("Transmision open!")	
+                #except Exception as err:
+                        #logging.getLogger("ftorrents").warning(err)
 
-                n.close()
-                gtk.main_quit()
+                #n.close()
+                #gtk.main_quit()
 
-        def closeLoop(self,n):
-                print "close loop..."
-                logging.getLogger("ftorrents").debug("closing without openining transmission")	
-                n.close()
-                gtk.main_quit()
+        #def closeLoop(self,n):
+                #print "close loop..."
+                #logging.getLogger("ftorrents").debug("closing without openining transmission")	
+                #n.close()
+                #gtk.main_quit()
 
 
-        def sendMessage(self,msg):
-                pynotify.init("Ftorrents")
-                notice = pynotify.Notification("Ftorrents", msg)
-                notice.add_action("default", "Open Transmission", self.openTransmission)
-                notice.connect("closed",self.closeLoop)
-                notice.set_urgency(pynotify.URGENCY_LOW)
-                try:
-                        notice.show()
-                        gtk.main()
+        #def sendMessage(self,msg):
+                #pynotify.init("Ftorrents")
+                #notice = pynotify.Notification("Ftorrents", msg)
+                #notice.add_action("default", "Open Transmission", self.openTransmission)
+                #notice.connect("closed",self.closeLoop)
+                #notice.set_urgency(pynotify.URGENCY_LOW)
+                #try:
+                        #notice.show()
+                        #gtk.main()
 
-                except Exception as err:
-                        logging.getLogger("ftorrents").warning(err)	
-                pass
+                #except Exception as err:
+                        #logging.getLogger("ftorrents").warning(err)	
+                #pass
 
         
         def getTorrents(self):
@@ -101,9 +109,10 @@ class TorrentDowner:
                 #config
                 #DOWN_DIR="/tmp/"
                 episodes=FeedLoader(self.conf.rss_url).load()
+        
                 fDowns=open(self.conf.cache_file,'r')
-                #gotchas=pickle.load(fDowns)
-                gotchas=set();
+                oldTorrents=pickle.load(fDowns)
+                oldTorrents=set();
                 fDowns.close()
                 ignored=[]
                 downloaded=[]
