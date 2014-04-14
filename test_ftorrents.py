@@ -79,9 +79,9 @@ class FtorrentsTests(unittest.TestCase):
         @patch("__builtin__.open")
         def test_create_config(self,stream,dump,mkpath):
                 conf=ftorrents.create_config()
-                assert conf.history_file==os.path.join(ftorrents.config_folder(),"history")
-                assert conf.rss_url=="not_set"
-                assert conf.download_dir==os.path.join(ftorrents.config_folder(),"torrent_files")
+                assert conf.history_file==os.path.join(ftorrents.config_folder(),ftorrents.HISTORY_FILE)
+                assert conf.rss_url==ftorrents.URL_NOT_SET
+                assert conf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
                 mkpath.assert_called_once()
                 dump.assert_called_once()
         
@@ -93,9 +93,9 @@ class FtorrentsTests(unittest.TestCase):
                 stream().write.side_effect= lambda t: w.write(t)
                 ftorrents.create_config()
                 cnf=yaml.load(w.getvalue())
-                assert cnf.history_file==os.path.join(ftorrents.config_folder(),"history")
+                assert cnf.history_file==os.path.join(ftorrents.config_folder(),ftorrents.HISTORY_FILE)
                 assert cnf.rss_url=="not_set"
-                assert cnf.download_dir==os.path.join(ftorrents.config_folder(),"torrent_files")
+                assert cnf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
 
         @patch('os.path.isfile')
         @patch('yaml.load')
@@ -122,7 +122,7 @@ class FtorrentsTests(unittest.TestCase):
                 isfile.return_value=False
                 cnf=ftorrents.Config("a","a","a")
                 history=ftorrents.TorrentDownloader(cnf).getHistory()
-                self.assertEqual(0,len(history),"The new cahe is empty")
+                self.assertEqual(0,len(history),"The new history is empty")
 
         @patch('os.path.isfile')
         @patch('pickle.load')

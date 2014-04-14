@@ -27,12 +27,16 @@ hand.setLevel(logging.DEBUG);
 logger.addHandler(hand);
 
 CONFIG_FOLDER=".ftorrents"
+CONFIG_FILE="cnf.yml"
+URL_NOT_SET="not_set"
+HISTORY_FILE="history"
+TORRENTS_DIR="torrent_files"
 
 def config_folder():
         return os.path.join(os.path.expanduser("~"),CONFIG_FOLDER)
 
 def config_file():
-        return os.path.join(config_folder(),"cnf.yml")
+        return os.path.join(config_folder(),CONFIG_FILE)
 
 def load_config():
         logger.debug("Loading config")
@@ -48,9 +52,9 @@ def load_config():
 
 def create_config():
         logger.info("Creating default config file %s"%config_file())
-        cnf=Config(os.path.join(config_folder(),"history"), "not_set",os.path.join(config_folder(),"torrent_files"))
+        cnf=Config(os.path.join(config_folder(),HISTORY_FILE), URL_NOT_SET,os.path.join(config_folder(),TORRENTS_DIR))
         distutils.dir_util.mkpath(config_folder())
-        with open(os.path.join(config_folder(),"cnf.yml")) as f:
+        with open(os.path.join(config_folder(),CONFIG_FILE)) as f:
                 yaml.dump(cnf,f)
         return cnf
 
