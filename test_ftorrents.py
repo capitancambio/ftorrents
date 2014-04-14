@@ -175,3 +175,27 @@ class FtorrentsTests(unittest.TestCase):
                 zipFile.read.assert_called_once()
                 #and the link closed
                 urlconnection.closed.assert_called_once()
+
+        @patch("ftorrents.TorrentLink")
+        @patch("__builtin__.open")
+        def test_download_episode_ok(self,stream,link):
+                ep=ftorrents.Episode()
+                ep.title="title"
+                ep.link="link"
+                cnf=ftorrents.Config("a","a","a")
+                self.assertTrue(ftorrents.TorrentDowner(cnf).downloadEpisode(ep),"We got the epsisode")
+                stream().write.assert_called_once()
+                link.read.assert_called_once()
+
+        @patch("ftorrents.TorrentLink")
+        @patch("__builtin__.open")
+        def test_download_episode_error(self,stream,link):
+                def err():
+                        raise Exception()
+
+                ep=ftorrents.Episode()
+                ep.title="title"
+                ep.link="link"
+                link().__enter__().read.side_effect=err
+                cnf=ftorrents.Config("a","a","a")
+                self.assertFalse(ftorrents.TorrentDowner(cnf).downloadEpisode(ep),"We didn't got the epsisode")
