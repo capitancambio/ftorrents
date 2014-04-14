@@ -7,6 +7,8 @@ import ftorrents
 import yaml
 import StringIO
 import distutils
+import urllib2
+
 RSS_EXAMPLE=""" 
 <?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:showrss="http://showrss.info/" version="2.0">
@@ -145,3 +147,31 @@ class FtorrentsTests(unittest.TestCase):
                         ftorrents.TorrentDowner(cnf).dumpCache(cache)
                         #check that is correct
                         self.assertEqual(result[0],cache,"The cache has been dumped correctly")
+
+
+        @patch("urllib2.urlopen")
+        def test_torrent_link_not_compressed(self,urlconnection):
+                #The connection is not gzipped
+                urlconnection.info().get.return_value='xml'
+                #open the torrent link
+                with ftorrents.TorrentLink("url!") as link:
+                        #and read the contents
+                        data=link.read()
+                #the data has been read
+                urlconnection.read.assert_called_once()
+                #and the link closed
+                urlconnection.closed.assert_called_once()
+
+        @patch("gzip.GzipFile")
+        @patch("urllib2.urlopen")
+        def test_torrent_link_compressed(self,urlconnection,zipFile):
+                #The connection is not gzipped
+                urlconnection().info().get.return_value='gzip'
+                #open the torrent link
+                with ftorrents.TorrentLink("url!") as link:
+                        #and read the contents
+                        data=link.read()
+                #the data has been unzipped and read 
+                zipFile.read.assert_called_once()
+                #and the link closed
+                urlconnection.closed.assert_called_once()

@@ -117,50 +117,69 @@ class TorrentDowner:
         def dumpCache(self,cache):
                 with open(self.conf.cache_file) as f:
                         pickle.dump(cache,f)
+
+        def downloadEpisode(self,episode):
+                try:
+                        #control gzipped data
+                        with open(self.conf.download_dir+episode.title+".torrent",'w') as tFile:
+                                with TorrentLink(episode.link) as tData:
+                                        #write the data
+                                        tFile.write(tData.read())
+                                        logging.getLogger("ftorrents").debug("Downloaded "+episode.title)
+                        return True
+                except Exception as e:
+                        logging.getLogger("ftorrents").warning(type(e))
+                        logging.getLogger("ftorrents").warning(str(e))
+                        return False
+
         
         def getTorrents(self):
                 logging.getLogger("ftorrents").debug("Starting to download torrents")
+                #get the feeds
                 episodes=FeedLoader(self.conf.rss_url).load()
+                #load cache
+                cache=self.getCache()
         
-                ignored=[]
-                downloaded=[]
-                for episode in episodes:
-                        try:
-                                if not episode.title in gotchas:
-
-                                        logger.debug("episodeisode: " + episode.title) 
-                                        logger.debug("Downloading: " + episode.link) 
-
-                                        tData=urllib2.urlopen(episode.link,None,10)
-                                        #control gzipped data
-                                        if tData.info().get('Content-Encoding') == 'gzip':
-                                                logger.debug("torrent file compressed ") 
-                                                buf = StringIO( tData.read())
-                                                f = gzip.GzipFile(fileobj=buf)
-                                                tData = f	
-                                        logger.debug("Done: " + episode.link) 
-                                        tFile=file(self.conf.download_dir+episode.title+".torrent",'w')
-                                        tFile.write(tData.read())
-                                        tFile.close()
-                                        tData.close()
-                                        logging.getLogger("ftorrents").debug("Downloaded "+episode.title)
-                                        gotchas.add(episode.title)
+                for episode in episodes :
+                        if  not episode.title in gotchas and this.downloadEpisode(episode):
+                                        cache.add(episode)
                                         downloaded.append(episode)
-                                else:
-                                        ignored.append(episode)
-                                        logging.getLogger("ftorrents").debug("Ignoring "+episode.title)
+                        else:
+                                logging.getLogger("ftorrents").debug("Ignoring "+episode.title)
 
-                        except Exception as e:
-                                logging.getLogger("ftorrents").warning(type(e))
-                                logging.getLogger("ftorrents").warning(str(e))
-
-                fDowns=open(self.conf.cache_file,'w')
-                #pickle.dump(gotchas,fDowns)
-                fDowns.close()
+                self.dump(cache)
                 msg="Downloaded "+str(len(downloaded))+" torrents \n"
                 logger.info(msg)
-                if len(downloaded)>0:	
-                        self.sendMessage(msg)
+
+class TorrentLink(object):
+        """docstring for TorrentLink"""
+        def __init__(self, url):
+                self.url = url
+                self.closeable=None
+                self.doRead=None
+
+        
+        def __enter__(self):
+                """ Gets the url and reads the data making sure that
+                if process it if it's gzipped"""
+                #get link by opening the link
+                urlData=urllib2.urlopen(self.url,None,10)
+                #if is compressed prepare the data
+                #control gzipped data
+                if urlData.info().get('Content-Encoding') == 'gzip':
+                        logger.debug("torrent file compressed ") 
+                        self.doRead=lambda :gzip.GzipFile(StringIO(urlData.read())).read()
+                else:
+                        self.doRead=lambda : urlData.read()
+                self.closeable=urlData
+                return self
+
+        def read(self):
+                return self.doRead()
+
+        def __exit__(self,type, value, traceback):
+                self.closeable.close()
+                
 
 class FeedLoader:
 
