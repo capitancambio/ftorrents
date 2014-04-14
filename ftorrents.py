@@ -67,7 +67,7 @@ class Config:
                 
 
 
-class TorrentDowner:
+class TorrentDownloader:
         def __init__(self,conf):
                 self.conf=conf
 
@@ -133,7 +133,7 @@ class TorrentDowner:
                         return False
 
         
-        def getTorrents(self):
+        def download(self):
                 logging.getLogger("ftorrents").debug("Starting to download torrents")
                 #get the feeds
                 episodes=FeedLoader(self.conf.rss_url).load()
@@ -151,7 +151,7 @@ class TorrentDowner:
                                 logging.getLogger("ftorrents").debug("Ignoring "+episode.title)
 
                 self.dumpHistory(history)
-                msg="Downloaded "+str(len(downloaded))+" torrents \n"
+                msg="Downloaded %i torrents"%len(downloaded)
                 logger.info(msg)
                 return downloaded
 

@@ -121,7 +121,7 @@ class FtorrentsTests(unittest.TestCase):
         def test_load_history_empty(self,isfile):
                 isfile.return_value=False
                 cnf=ftorrents.Config("a","a","a")
-                history=ftorrents.TorrentDowner(cnf).getHistory()
+                history=ftorrents.TorrentDownloader(cnf).getHistory()
                 self.assertEqual(0,len(history),"The new cahe is empty")
 
         @patch('os.path.isfile')
@@ -134,7 +134,7 @@ class FtorrentsTests(unittest.TestCase):
                 with patch("__builtin__.open") as stream:
                         cnf=ftorrents.Config("a","a","a")
                         #get the pickled history
-                        history=ftorrents.TorrentDowner(cnf).getHistory()
+                        history=ftorrents.TorrentDownloader(cnf).getHistory()
                         #check that is correct
                         self.assertEqual(2,len(history),"The history has been read correctly")
 
@@ -147,7 +147,7 @@ class FtorrentsTests(unittest.TestCase):
                 with patch("__builtin__.open") as stream:
                         cnf=ftorrents.Config("a","a","a")
                         #get the pickled history
-                        ftorrents.TorrentDowner(cnf).dumpHistory(history)
+                        ftorrents.TorrentDownloader(cnf).dumpHistory(history)
                         #check that is correct
                         self.assertEqual(result[0],history,"The history has been dumped correctly")
 
@@ -186,7 +186,7 @@ class FtorrentsTests(unittest.TestCase):
                 ep.title="title"
                 ep.link="link"
                 cnf=ftorrents.Config("a","a","a")
-                self.assertTrue(ftorrents.TorrentDowner(cnf).downloadEpisode(ep),"We got the epsisode")
+                self.assertTrue(ftorrents.TorrentDownloader(cnf).downloadEpisode(ep),"We got the epsisode")
                 stream().write.assert_called_once()
                 link.read.assert_called_once()
 
@@ -200,29 +200,29 @@ class FtorrentsTests(unittest.TestCase):
                 ep.link="link"
                 link().__enter__().read.side_effect=err
                 cnf=ftorrents.Config("a","a","a")
-                self.assertFalse(ftorrents.TorrentDowner(cnf).downloadEpisode(ep),"We didn't got the epsisode")
+                self.assertFalse(ftorrents.TorrentDownloader(cnf).downloadEpisode(ep),"We didn't got the epsisode")
 
         def test_get_torrents_all(self):
                 #simple config
                 cnf=ftorrents.Config("a",RSS_EXAMPLE,"a")
-                downer=ftorrents.TorrentDowner(cnf)
+                downer=ftorrents.TorrentDownloader(cnf)
                 #emtpy history
                 downer.getHistory=mock.Mock(return_value=set())
                 downer.dumpHistory=mock.Mock()
                 downer.downloadEpisode=mock.Mock(return_value=True)
                 #we expect to download all the torrents in the rss example
-                eps=downer.getTorrents()
+                eps=downer.download()
                 self.assertEqual(2,len(eps),"we got two torrents!")
 
         def test_get_torrents_ignore_history(self):
                 #simple config
                 cnf=ftorrents.Config("a",RSS_EXAMPLE,"a")
                 episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
-                downer=ftorrents.TorrentDowner(cnf)
+                downer=ftorrents.TorrentDownloader(cnf)
                 #history already has the episodes
                 downer.getHistory=mock.Mock(return_value=set([ e.title for e in episodes]))
                 downer.dumpHistory=mock.Mock()
                 downer.downloadEpisode=mock.Mock(return_value=True)
                 #we expect to get an empty list
-                eps=downer.getTorrents()
+                eps=downer.download()
                 self.assertEqual(0,len(eps),"all the torrents were ignored")
