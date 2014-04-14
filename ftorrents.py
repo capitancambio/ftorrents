@@ -5,10 +5,12 @@ import gzip
 import pickle
 import pynotify
 import feedparser
+import distutils
 import gtk
 import os
 
 import logging
+import yaml
 #Credenciales showrss
 #ftorrents
 #ftorrents
@@ -24,12 +26,37 @@ hand = logging.StreamHandler()
 hand.setLevel(logging.DEBUG);
 logger.addHandler(hand);
 
+CONFIG_FOLDER=".ftorrents"
+
+def config_folder():
+        return os.path.join(os.path.expanduser("~"),CONFIG_FOLDER)
+
+def config_file():
+        return os.path.join(config_folder(),"cnf.yml")
+
+def load_config():
+        #check if the config folder exsists if not create it
+        if not os.path.isfile(config_file()):
+                return create_config()
+        else:
+               return yaml.load(config_file()) 
+def create_config():
+        cnf=Config(os.path.join(config_folder(),"cache"), "not_set",os.path.join(config_folder(),"torrent_files"))
+        distutils.dir_util.mkpath(config_folder())
+        with open(os.path.join(config_folder(),"cnf.yml")) as f:
+                yaml.dump(cnf,f)
+        return cnf
+
 class Config:
 
-        def __init__(self):
-                self.cache_file='/home/javi/.ftorrent/downloads'
-                self.rss_url='http://showrss.info/rss.php?user_id=116775&hd=null&proper=null&namespaces=true&magnets=false'
-                self.download_dir="/home/javi/src/ftorrents/torrent_files2/"
+        """configuration items"""
+        def __init__(self,cache_file,rss_url,download_dir):
+                self.cache_file   = cache_file 
+                self.rss_url      = rss_url
+                self.download_dir = download_dir 
+
+        
+
 
 
 class TorrentDowner:
