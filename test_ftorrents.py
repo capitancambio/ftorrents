@@ -201,3 +201,28 @@ class FtorrentsTests(unittest.TestCase):
                 link().__enter__().read.side_effect=err
                 cnf=ftorrents.Config("a","a","a")
                 self.assertFalse(ftorrents.TorrentDowner(cnf).downloadEpisode(ep),"We didn't got the epsisode")
+
+        def test_get_torrents_all(self):
+                #simple config
+                cnf=ftorrents.Config("a",RSS_EXAMPLE,"a")
+                downer=ftorrents.TorrentDowner(cnf)
+                #emtpy history
+                downer.getCache=mock.Mock(return_value=set())
+                downer.dumpCache=mock.Mock()
+                downer.downloadEpisode=mock.Mock(return_value=True)
+                #we expect to download all the torrents in the rss example
+                eps=downer.getTorrents()
+                self.assertEqual(2,len(eps),"we got two torrents!")
+
+        def test_get_torrents_ignore_history(self):
+                #simple config
+                cnf=ftorrents.Config("a",RSS_EXAMPLE,"a")
+                episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
+                downer=ftorrents.TorrentDowner(cnf)
+                #history already has the episodes
+                downer.getCache=mock.Mock(return_value=set([ e.title for e in episodes]))
+                downer.dumpCache=mock.Mock()
+                downer.downloadEpisode=mock.Mock(return_value=True)
+                #we expect to get an empty list
+                eps=downer.getTorrents()
+                self.assertEqual(0,len(eps),"all the torrents were ignored")

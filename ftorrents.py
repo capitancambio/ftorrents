@@ -139,17 +139,21 @@ class TorrentDowner:
                 episodes=FeedLoader(self.conf.rss_url).load()
                 #load cache
                 cache=self.getCache()
-        
+                downloaded=[] 
                 for episode in episodes :
-                        if  not episode.title in gotchas and this.downloadEpisode(episode):
-                                        cache.add(episode)
+                        #not in the history 
+                        if  not episode.title in cache:
+                                #has been downloaded properly
+                                if self.downloadEpisode(episode):
+                                        cache.add(episode.title)
                                         downloaded.append(episode)
                         else:
                                 logging.getLogger("ftorrents").debug("Ignoring "+episode.title)
 
-                self.dump(cache)
+                self.dumpCache(cache)
                 msg="Downloaded "+str(len(downloaded))+" torrents \n"
                 logger.info(msg)
+                return downloaded
 
 class TorrentLink(object):
         """docstring for TorrentLink"""
