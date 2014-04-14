@@ -110,3 +110,12 @@ class FtorrentsTests(unittest.TestCase):
                 episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
                 self.assertEquals(2,len(episodes),"We got two episodes")
                 self.assertEquals("Game of Thrones 4x02 The Lion and the Rose 720p",episodes[0].title)
+
+
+        @patch('os.path.isfile')
+        def test_load_cache_empty(self,isfile):
+                isfile.return_value=False
+                cnf=ftorrents.Config("a","a","a")
+                cache=ftorrents.TorrentDowner(cnf).getCache()
+                self.assertEqual(0,len(cache),"The new cahe is empty")
+
