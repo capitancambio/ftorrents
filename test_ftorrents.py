@@ -8,6 +8,9 @@ import yaml
 import StringIO
 import distutils
 import urllib2
+import logging
+#avoid logs during unittesting
+logging.disable(logging.CRITICAL)
 
 RSS_EXAMPLE=""" 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -192,7 +195,6 @@ class FtorrentsTests(unittest.TestCase):
         def test_download_episode_error(self,stream,link):
                 def err():
                         raise Exception()
-
                 ep=ftorrents.Episode()
                 ep.title="title"
                 ep.link="link"
