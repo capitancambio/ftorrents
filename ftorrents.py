@@ -48,6 +48,9 @@ def load_config():
         else:
                 cnf=yaml.load(config_file()) 
         logger.info("Configuration loaded %s"%cnf)
+        if cnf.rss_url == URL_NOT_SET:
+                raise RutimeError("Please set the rss url in the configuration file (%s)"%config_file())
+
         return cnf
 
 def create_config():

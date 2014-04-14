@@ -99,6 +99,20 @@ class FtorrentsTests(unittest.TestCase):
 
         @patch('os.path.isfile')
         @patch('yaml.load')
+        def test_load_url_not_set(self,load,isfile):
+                #if the config file exists 
+                isfile.return_value=True
+                #and the contents from yaml are these
+                load.return_value=ftorrents.Config("history",ftorrents.URL_NOT_SET,"download")
+                #get the correct configuration and fail because the url is not set
+                try:
+                        cnf=ftorrents.load_config()
+                        self.fail("Exception wasn't thrown")
+                except:
+                        pass
+
+        @patch('os.path.isfile')
+        @patch('yaml.load')
         def test_load_config(self,load,isfile):
                 #if the config file exists 
                 isfile.return_value=True
