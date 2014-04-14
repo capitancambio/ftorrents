@@ -105,20 +105,21 @@ class TorrentDowner:
 
 
         def getCache(self):
-                oldTorrents=set();
+                cache=set();
                 if os.path.isfile(self.conf.cache_file):
                         with open(self.conf.cache_file,'r') as f:
-                                oldTorrents=pickle.load(f)
+                                cache=pickle.load(f)
                 else:
                         logger.warning("Couldn't load the cache file")
 
-                return oldTorrents
+                return cache
 
+        def dumpCache(self,cache):
+                with open(self.conf.cache_file) as f:
+                        pickle.dump(cache,f)
         
         def getTorrents(self):
                 logging.getLogger("ftorrents").debug("Starting to download torrents")
-                #config
-                #DOWN_DIR="/tmp/"
                 episodes=FeedLoader(self.conf.rss_url).load()
         
                 ignored=[]

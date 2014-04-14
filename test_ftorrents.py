@@ -133,3 +133,15 @@ class FtorrentsTests(unittest.TestCase):
                         #check that is correct
                         self.assertEqual(2,len(cache),"The cache has been read correctly")
 
+        @patch('pickle.dump')
+        def test_save_cache(self,pickle):
+                #fix context 
+                cache=(1,2,3)
+                result=[]
+                pickle.side_effect=lambda c,f: result.append(c) 
+                with patch("__builtin__.open") as stream:
+                        cnf=ftorrents.Config("a","a","a")
+                        #get the pickled cache
+                        ftorrents.TorrentDowner(cnf).dumpCache(cache)
+                        #check that is correct
+                        self.assertEqual(result[0],cache,"The cache has been dumped correctly")
