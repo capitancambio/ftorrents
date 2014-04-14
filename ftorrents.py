@@ -121,7 +121,7 @@ class TorrentDowner:
         def downloadEpisode(self,episode):
                 try:
                         #control gzipped data
-                        with open(self.conf.download_dir+episode.title+".torrent",'w') as tFile:
+                        with open(os.path.join(self.conf.download_dir,episode.title+".torrent"),'w') as tFile:
                                 with TorrentLink(episode.link) as tData:
                                         #write the data
                                         tFile.write(tData.read())
