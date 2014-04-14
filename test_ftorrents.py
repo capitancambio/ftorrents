@@ -7,6 +7,43 @@ import ftorrents
 import yaml
 import StringIO
 import distutils
+RSS_EXAMPLE=""" 
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:showrss="http://showrss.info/" version="2.0">
+  <channel>
+    <title>showRSS: feed for Game of Thrones</title>
+    <link>http://showrss.info/?cs=browse&amp;show=350</link>
+    <ttl>30</ttl>
+    <description>showRSS feed Game of Thrones</description>
+    <item>
+      <title>Game of Thrones 4x02 The Lion and the Rose 720p</title>
+      <link>magnet:?xt=urn:btih:BCE21308AFAB5BD10AECA40C8F9861708B5309E1&amp;dn=Game+of+Thrones+S04E02+720p+HDTV+x264+2HD&amp;tr=udp://tracker.openbittorrent.com:80&amp;tr=udp://tracker.publicbt.com:80&amp;tr=udp://tracker.istole.it:80&amp;tr=http://tracker.istole.it&amp;tr=http://fr33dom.h33t.com:3310/announce</link>
+      <guid isPermaLink="false">568316b13c072fc9d660f72759920163</guid>
+      <pubDate>Mon, 14 Apr 2014 03:30:01 +0000</pubDate>
+      <description>New HD 720p torrent: Game of Thrones 4x02 The Lion and the Rose 720p. Link: &lt;a href="magnet:?xt=urn:btih:BCE21308AFAB5BD10AECA40C8F9861708B5309E1&amp;dn=Game+of+Thrones+S04E02+720p+HDTV+x264+2HD&amp;tr=udp://tracker.openbittorrent.com:80&amp;tr=udp://tracker.publicbt.com:80&amp;tr=udp://tracker.istole.it:80&amp;tr=http://tracker.istole.it&amp;tr=http://fr33dom.h33t.com:3310/announce"&gt;magnet:?xt=urn:btih:BCE21308AFAB5BD10AECA40C8F9861708B5309E1&amp;dn=Game+of+Thrones+S04E02+720p+HDTV+x264+2HD&amp;tr=udp://tracker.openbittorrent.com:80&amp;tr=udp://tracker.publicbt.com:80&amp;tr=udp://tracker.istole.it:80&amp;tr=http://tracker.istole.it&amp;tr=http://fr33dom.h33t.com:3310/announce&lt;/a&gt;</description>
+      <showrss:showid>350</showrss:showid>
+      <showrss:showname>Game of Thrones</showrss:showname>
+      <showrss:episode>36710</showrss:episode>
+      <showrss:info_hash>BCE21308AFAB5BD10AECA40C8F9861708B5309E1</showrss:info_hash>
+      <showrss:rawtitle>Game of Thrones S04E02 720p HDTV x264 2HD</showrss:rawtitle>
+      <enclosure url="magnet:?xt=urn:btih:BCE21308AFAB5BD10AECA40C8F9861708B5309E1&amp;dn=Game+of+Thrones+S04E02+720p+HDTV+x264+2HD&amp;tr=udp://tracker.openbittorrent.com:80&amp;tr=udp://tracker.publicbt.com:80&amp;tr=udp://tracker.istole.it:80&amp;tr=http://tracker.istole.it&amp;tr=http://fr33dom.h33t.com:3310/announce" length="0" type="application/x-bittorrent"/>
+    </item>
+    <item>
+      <title>Game of Thrones 4x02 The Lion and the Rose</title>
+      <link>magnet:?xt=urn:btih:BED425AD8C96FF8645E4674762DC86C3CD123CDE&amp;dn=Game+of+Thrones+S04E02+HDTV+x264+2HD&amp;tr=udp://tracker.openbittorrent.com:80&amp;tr=udp://tracker.publicbt.com:80&amp;tr=udp://tracker.istole.it:80&amp;tr=http://tracker.istole.it&amp;tr=http://fr33dom.h33t.com:3310/announce</link>
+      <guid isPermaLink="false">d7d5b9548c2e0513a2b2883aa47513b1</guid>
+      <pubDate>Mon, 14 Apr 2014 02:30:01 +0000</pubDate>
+      <description>New standard torrent: Game of Thrones 4x02 The Lion and the Rose. Link: &lt;a href="magnet:?xt=urn:btih:BED425AD8C96FF8645E4674762DC86C3CD123CDE&amp;dn=Game+of+Thrones+S04E02+HDTV+x264+2HD&amp;tr=udp://tracker.openbittorrent.com:80&amp;tr=udp://tracker.publicbt.com:80&amp;tr=udp://tracker.istole.it:80&amp;tr=http://tracker.istole.it&amp;tr=http://fr33dom.h33t.com:3310/announce"&gt;magnet:?xt=urn:btih:BED425AD8C96FF8645E4674762DC86C3CD123CDE&amp;dn=Game+of+Thrones+S04E02+HDTV+x264+2HD&amp;tr=udp://tracker.openbittorrent.com:80&amp;tr=udp://tracker.publicbt.com:80&amp;tr=udp://tracker.istole.it:80&amp;tr=http://tracker.istole.it&amp;tr=http://fr33dom.h33t.com:3310/announce&lt;/a&gt;</description>
+      <showrss:showid>350</showrss:showid>
+      <showrss:showname>Game of Thrones</showrss:showname>
+      <showrss:episode>36701</showrss:episode>
+      <showrss:info_hash>BED425AD8C96FF8645E4674762DC86C3CD123CDE</showrss:info_hash>
+      <showrss:rawtitle>Game of Thrones S04E02 HDTV x264 2HD</showrss:rawtitle>
+      <enclosure url="magnet:?xt=urn:btih:BED425AD8C96FF8645E4674762DC86C3CD123CDE&amp;dn=Game+of+Thrones+S04E02+HDTV+x264+2HD&amp;tr=udp://tracker.openbittorrent.com:80&amp;tr=udp://tracker.publicbt.com:80&amp;tr=udp://tracker.istole.it:80&amp;tr=http://tracker.istole.it&amp;tr=http://fr33dom.h33t.com:3310/announce" length="0" type="application/x-bittorrent"/>
+    </item>
+  </channel>
+</rss>
+"""
 
 class FtorrentsTests(unittest.TestCase):
 
@@ -67,3 +104,9 @@ class FtorrentsTests(unittest.TestCase):
                 assert cnf.cache_file=="cache"
                 assert cnf.rss_url=="url"
                 assert cnf.download_dir=="download"
+
+        
+        def test_load_episodes(self): 
+                episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
+                self.assertEquals(2,len(episodes),"We got two episodes")
+                self.assertEquals("Game of Thrones 4x02 The Lion and the Rose 720p",episodes[0].title)

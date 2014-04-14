@@ -184,7 +184,7 @@ class Episode (object):
 
 
         def __str__(self):
-                s+="Episode id:"+self.id+"\n"
+                s="Episode id:"+self.id+"\n"
                 s+="Episode:"+self.title+"\n"
                 s+="Date:"+self.date+"\n"
                 s+="Torrent:"+self.link+"\n"
