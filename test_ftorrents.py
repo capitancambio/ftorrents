@@ -119,3 +119,17 @@ class FtorrentsTests(unittest.TestCase):
                 cache=ftorrents.TorrentDowner(cnf).getCache()
                 self.assertEqual(0,len(cache),"The new cahe is empty")
 
+        @patch('os.path.isfile')
+        @patch('pickle.load')
+        def test_load_cache(self,pload,isfile):
+                #fix context 
+                r=ftorrents.FeedLoader(RSS_EXAMPLE).load()
+                isfile.return_value=True
+                pload.return_value=ftorrents.FeedLoader(RSS_EXAMPLE).load()
+                with patch("__builtin__.open") as stream:
+                        cnf=ftorrents.Config("a","a","a")
+                        #get the pickled cache
+                        cache=ftorrents.TorrentDowner(cnf).getCache()
+                        #check that is correct
+                        self.assertEqual(2,len(cache),"The cache has been read correctly")
+
