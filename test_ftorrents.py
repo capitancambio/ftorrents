@@ -79,7 +79,7 @@ class FtorrentsTests(unittest.TestCase):
         @patch("__builtin__.open")
         def test_create_config(self,stream,dump,mkpath):
                 conf=ftorrents.create_config()
-                assert conf.cache_file==os.path.join(ftorrents.config_folder(),"cache")
+                assert conf.history_file==os.path.join(ftorrents.config_folder(),"history")
                 assert conf.rss_url=="not_set"
                 assert conf.download_dir==os.path.join(ftorrents.config_folder(),"torrent_files")
                 mkpath.assert_called_once()
@@ -93,7 +93,7 @@ class FtorrentsTests(unittest.TestCase):
                 stream().write.side_effect= lambda t: w.write(t)
                 ftorrents.create_config()
                 cnf=yaml.load(w.getvalue())
-                assert cnf.cache_file==os.path.join(ftorrents.config_folder(),"cache")
+                assert cnf.history_file==os.path.join(ftorrents.config_folder(),"history")
                 assert cnf.rss_url=="not_set"
                 assert cnf.download_dir==os.path.join(ftorrents.config_folder(),"torrent_files")
 
@@ -103,10 +103,10 @@ class FtorrentsTests(unittest.TestCase):
                 #if the config file exists 
                 isfile.return_value=True
                 #and the contents from yaml are these
-                load.return_value=ftorrents.Config("cache","url","download")
+                load.return_value=ftorrents.Config("history","url","download")
                 #get get the correct configuration
                 cnf=ftorrents.load_config()
-                assert cnf.cache_file=="cache"
+                assert cnf.history_file=="history"
                 assert cnf.rss_url=="url"
                 assert cnf.download_dir=="download"
 
@@ -118,38 +118,38 @@ class FtorrentsTests(unittest.TestCase):
 
 
         @patch('os.path.isfile')
-        def test_load_cache_empty(self,isfile):
+        def test_load_history_empty(self,isfile):
                 isfile.return_value=False
                 cnf=ftorrents.Config("a","a","a")
-                cache=ftorrents.TorrentDowner(cnf).getCache()
-                self.assertEqual(0,len(cache),"The new cahe is empty")
+                history=ftorrents.TorrentDowner(cnf).getHistory()
+                self.assertEqual(0,len(history),"The new cahe is empty")
 
         @patch('os.path.isfile')
         @patch('pickle.load')
-        def test_load_cache(self,pload,isfile):
+        def test_load_history(self,pload,isfile):
                 #fix context 
                 r=ftorrents.FeedLoader(RSS_EXAMPLE).load()
                 isfile.return_value=True
                 pload.return_value=ftorrents.FeedLoader(RSS_EXAMPLE).load()
                 with patch("__builtin__.open") as stream:
                         cnf=ftorrents.Config("a","a","a")
-                        #get the pickled cache
-                        cache=ftorrents.TorrentDowner(cnf).getCache()
+                        #get the pickled history
+                        history=ftorrents.TorrentDowner(cnf).getHistory()
                         #check that is correct
-                        self.assertEqual(2,len(cache),"The cache has been read correctly")
+                        self.assertEqual(2,len(history),"The history has been read correctly")
 
         @patch('pickle.dump')
-        def test_save_cache(self,pickle):
+        def test_save_history(self,pickle):
                 #fix context 
-                cache=(1,2,3)
+                history=(1,2,3)
                 result=[]
                 pickle.side_effect=lambda c,f: result.append(c) 
                 with patch("__builtin__.open") as stream:
                         cnf=ftorrents.Config("a","a","a")
-                        #get the pickled cache
-                        ftorrents.TorrentDowner(cnf).dumpCache(cache)
+                        #get the pickled history
+                        ftorrents.TorrentDowner(cnf).dumpHistory(history)
                         #check that is correct
-                        self.assertEqual(result[0],cache,"The cache has been dumped correctly")
+                        self.assertEqual(result[0],history,"The history has been dumped correctly")
 
 
         @patch("urllib2.urlopen")
@@ -207,8 +207,8 @@ class FtorrentsTests(unittest.TestCase):
                 cnf=ftorrents.Config("a",RSS_EXAMPLE,"a")
                 downer=ftorrents.TorrentDowner(cnf)
                 #emtpy history
-                downer.getCache=mock.Mock(return_value=set())
-                downer.dumpCache=mock.Mock()
+                downer.getHistory=mock.Mock(return_value=set())
+                downer.dumpHistory=mock.Mock()
                 downer.downloadEpisode=mock.Mock(return_value=True)
                 #we expect to download all the torrents in the rss example
                 eps=downer.getTorrents()
@@ -220,8 +220,8 @@ class FtorrentsTests(unittest.TestCase):
                 episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
                 downer=ftorrents.TorrentDowner(cnf)
                 #history already has the episodes
-                downer.getCache=mock.Mock(return_value=set([ e.title for e in episodes]))
-                downer.dumpCache=mock.Mock()
+                downer.getHistory=mock.Mock(return_value=set([ e.title for e in episodes]))
+                downer.dumpHistory=mock.Mock()
                 downer.downloadEpisode=mock.Mock(return_value=True)
                 #we expect to get an empty list
                 eps=downer.getTorrents()

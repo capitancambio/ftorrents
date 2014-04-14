@@ -48,7 +48,7 @@ def load_config():
 
 def create_config():
         logger.info("Creating default config file %s"%config_file())
-        cnf=Config(os.path.join(config_folder(),"cache"), "not_set",os.path.join(config_folder(),"torrent_files"))
+        cnf=Config(os.path.join(config_folder(),"history"), "not_set",os.path.join(config_folder(),"torrent_files"))
         distutils.dir_util.mkpath(config_folder())
         with open(os.path.join(config_folder(),"cnf.yml")) as f:
                 yaml.dump(cnf,f)
@@ -57,13 +57,13 @@ def create_config():
 class Config:
 
         """configuration items"""
-        def __init__(self,cache_file,rss_url,download_dir):
-                self.cache_file   = cache_file 
+        def __init__(self,history_file,rss_url,download_dir):
+                self.history_file   = history_file 
                 self.rss_url      = rss_url
                 self.download_dir = download_dir 
 
         def __repr__(self):
-                return "%s(%s,%s,%s)" % (self.__class__, self.cache_file,self.rss_url,self.download_dir)
+                return "%s(%s,%s,%s)" % (self.__class__, self.history_file,self.rss_url,self.download_dir)
                 
 
 
@@ -104,19 +104,19 @@ class TorrentDowner:
                 #pass
 
 
-        def getCache(self):
-                cache=set();
-                if os.path.isfile(self.conf.cache_file):
-                        with open(self.conf.cache_file,'r') as f:
-                                cache=pickle.load(f)
+        def getHistory(self):
+                history=set();
+                if os.path.isfile(self.conf.history_file):
+                        with open(self.conf.history_file,'r') as f:
+                                history=pickle.load(f)
                 else:
-                        logger.warning("Couldn't load the cache file")
+                        logger.warning("Couldn't load the history file")
 
-                return cache
+                return history
 
-        def dumpCache(self,cache):
-                with open(self.conf.cache_file) as f:
-                        pickle.dump(cache,f)
+        def dumpHistory(self,history):
+                with open(self.conf.history_file) as f:
+                        pickle.dump(history,f)
 
         def downloadEpisode(self,episode):
                 try:
@@ -137,20 +137,20 @@ class TorrentDowner:
                 logging.getLogger("ftorrents").debug("Starting to download torrents")
                 #get the feeds
                 episodes=FeedLoader(self.conf.rss_url).load()
-                #load cache
-                cache=self.getCache()
+                #load history
+                history=self.getHistory()
                 downloaded=[] 
                 for episode in episodes :
                         #not in the history 
-                        if  not episode.title in cache:
+                        if  not episode.title in history:
                                 #has been downloaded properly
                                 if self.downloadEpisode(episode):
-                                        cache.add(episode.title)
+                                        history.add(episode.title)
                                         downloaded.append(episode)
                         else:
                                 logging.getLogger("ftorrents").debug("Ignoring "+episode.title)
 
-                self.dumpCache(cache)
+                self.dumpHistory(history)
                 msg="Downloaded "+str(len(downloaded))+" torrents \n"
                 logger.info(msg)
                 return downloaded
