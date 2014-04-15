@@ -3,13 +3,13 @@ from mock import patch
 import mock
 import string
 import os
-import ftorrents
 import yaml
 import StringIO
 import distutils
 import urllib2
 import logging
 import config
+import downloader
 #avoid logs during unittesting
 logging.disable(logging.CRITICAL)
 
@@ -57,7 +57,7 @@ class FtorrentsTests(unittest.TestCase):
 
         
         def test_load_episodes(self): 
-                episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
+                episodes=downloader.FeedLoader(RSS_EXAMPLE).load()
                 self.assertEquals(2,len(episodes),"We got two episodes")
                 self.assertEquals("Game of Thrones 4x02 The Lion and the Rose 720p",episodes[0].title)
 
@@ -66,20 +66,20 @@ class FtorrentsTests(unittest.TestCase):
         def test_load_history_empty(self,isfile):
                 isfile.return_value=False
                 cnf=config.Config("a","a","a")
-                history=ftorrents.TorrentDownloader(cnf).getHistory()
+                history=downloader.TorrentDownloader(cnf).getHistory()
                 self.assertEqual(0,len(history),"The new history is empty")
 
         @patch('os.path.isfile')
         @patch('pickle.load')
         def test_load_history(self,pload,isfile):
                 #fix context 
-                r=ftorrents.FeedLoader(RSS_EXAMPLE).load()
+                r=downloader.FeedLoader(RSS_EXAMPLE).load()
                 isfile.return_value=True
-                pload.return_value=ftorrents.FeedLoader(RSS_EXAMPLE).load()
+                pload.return_value=downloader.FeedLoader(RSS_EXAMPLE).load()
                 with patch("__builtin__.open") as stream:
                         cnf=config.Config("a","a","a")
                         #get the pickled history
-                        history=ftorrents.TorrentDownloader(cnf).getHistory()
+                        history=downloader.TorrentDownloader(cnf).getHistory()
                         #check that is correct
                         self.assertEqual(2,len(history),"The history has been read correctly")
 
@@ -92,7 +92,7 @@ class FtorrentsTests(unittest.TestCase):
                 with patch("__builtin__.open") as stream:
                         cnf=config.Config("a","a","a")
                         #get the pickled history
-                        ftorrents.TorrentDownloader(cnf).dumpHistory(history)
+                        downloader.TorrentDownloader(cnf).dumpHistory(history)
                         #check that is correct
                         self.assertEqual(result[0],history,"The history has been dumped correctly")
 
@@ -102,7 +102,7 @@ class FtorrentsTests(unittest.TestCase):
                 #The connection is not gzipped
                 urlconnection.info().get.return_value='xml'
                 #open the torrent link
-                with ftorrents.TorrentLink("url!") as link:
+                with downloader.TorrentLink("url!") as link:
                         #and read the contents
                         data=link.read()
                 #the data has been read
@@ -116,7 +116,7 @@ class FtorrentsTests(unittest.TestCase):
                 #The connection is not gzipped
                 urlconnection().info().get.return_value='gzip'
                 #open the torrent link
-                with ftorrents.TorrentLink("url!") as link:
+                with downloader.TorrentLink("url!") as link:
                         #and read the contents
                         data=link.read()
                 #the data has been unzipped and read 
@@ -124,33 +124,33 @@ class FtorrentsTests(unittest.TestCase):
                 #and the link closed
                 urlconnection.closed.assert_called_once()
 
-        @patch("ftorrents.TorrentLink")
+        @patch("ftorrents.downloader.TorrentLink")
         @patch("__builtin__.open")
         def test_download_episode_ok(self,stream,link):
-                ep=ftorrents.Episode()
+                ep=downloader.Episode()
                 ep.title="title"
                 ep.link="link"
                 cnf=config.Config("a","a","a")
-                self.assertTrue(ftorrents.TorrentDownloader(cnf).downloadEpisode(ep),"We got the epsisode")
+                self.assertTrue(downloader.TorrentDownloader(cnf).downloadEpisode(ep),"We got the epsisode")
                 stream().write.assert_called_once()
                 link.read.assert_called_once()
 
-        @patch("ftorrents.TorrentLink")
+        @patch("ftorrents.downloader.TorrentLink")
         @patch("__builtin__.open")
         def test_download_episode_error(self,stream,link):
                 def err():
                         raise Exception()
-                ep=ftorrents.Episode()
+                ep=downloader.Episode()
                 ep.title="title"
                 ep.link="link"
                 link().__enter__().read.side_effect=err
                 cnf=config.Config("a","a","a")
-                self.assertFalse(ftorrents.TorrentDownloader(cnf).downloadEpisode(ep),"We didn't got the epsisode")
+                self.assertFalse(downloader.TorrentDownloader(cnf).downloadEpisode(ep),"We didn't got the epsisode")
 
         def test_get_torrents_all(self):
                 #simple config
                 cnf=config.Config("a",RSS_EXAMPLE,"a")
-                downer=ftorrents.TorrentDownloader(cnf)
+                downer=downloader.TorrentDownloader(cnf)
                 #emtpy history
                 downer.getHistory=mock.Mock(return_value=set())
                 downer.dumpHistory=mock.Mock()
@@ -162,8 +162,8 @@ class FtorrentsTests(unittest.TestCase):
         def test_get_torrents_ignore_history(self):
                 #simple config
                 cnf=config.Config("a",RSS_EXAMPLE,"a")
-                episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
-                downer=ftorrents.TorrentDownloader(cnf)
+                episodes=downloader.FeedLoader(RSS_EXAMPLE).load()
+                downer=downloader.TorrentDownloader(cnf)
                 #history already has the episodes
                 downer.getHistory=mock.Mock(return_value=set([ e.title for e in episodes]))
                 downer.dumpHistory=mock.Mock()

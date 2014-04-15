@@ -3,7 +3,7 @@ from mock import patch
 import mock
 import string
 import os
-import config
+import config 
 import yaml
 import StringIO
 import distutils
@@ -24,7 +24,7 @@ class ConfigTests(unittest.TestCase):
 
         @patch('distutils.dir_util.mkpath')
         @patch('os.path.isfile')
-        @patch('config.create_config')
+        @patch('ftorrents.config.create_config')
         def test_load_calls_create(self,create_config,isfile,mkpath):
                 #if the config folder doesn't exsists
                 isfile.return_value=False
