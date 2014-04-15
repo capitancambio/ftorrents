@@ -63,9 +63,10 @@ class FtorrentsTests(unittest.TestCase):
                 #check that the config_file returns the appropriate value
                 assert ftorrents.config_file()==os.path.join(ftorrents.config_folder(),"cnf.yml")
 
+        @patch('distutils.dir_util.mkpath')
         @patch('os.path.isfile')
         @patch('ftorrents.create_config')
-        def test_load_calls_create(self,create_config,isfile):
+        def test_load_calls_create(self,create_config,isfile,mkpath):
                 #if the config folder doesn't exsists
                 isfile.return_value=False
                 #and we try to load the configuration
@@ -97,9 +98,21 @@ class FtorrentsTests(unittest.TestCase):
                 assert cnf.rss_url=="not_set"
                 assert cnf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
 
+        @patch("__builtin__.open")
+        def test_create_config_yaml(self,stream):
+                mock.mock_open(stream);
+                w=StringIO.StringIO()
+                stream().write.side_effect= lambda t: w.write(t)
+                ftorrents.create_config()
+                cnf=yaml.load(w.getvalue())
+                assert cnf.history_file==os.path.join(ftorrents.config_folder(),ftorrents.HISTORY_FILE)
+                assert cnf.rss_url=="not_set"
+                assert cnf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
+
+        @patch('distutils.dir_util.mkpath')
         @patch('os.path.isfile')
         @patch('yaml.load')
-        def test_load_url_not_set(self,load,isfile):
+        def test_load_url_not_set(self,load,isfile,mkpath):
                 #if the config file exists 
                 isfile.return_value=True
                 #and the contents from yaml are these
@@ -111,9 +124,10 @@ class FtorrentsTests(unittest.TestCase):
                 except:
                         pass
 
+        @patch('distutils.dir_util.mkpath')
         @patch('os.path.isfile')
         @patch('yaml.load')
-        def test_load_config(self,load,isfile):
+        def test_load_config(self,load,isfile,mkpath):
                 #if the config file exists 
                 isfile.return_value=True
                 #and the contents from yaml are these
@@ -124,6 +138,17 @@ class FtorrentsTests(unittest.TestCase):
                 assert cnf.rss_url=="url"
                 assert cnf.download_dir=="download"
 
+        @patch('distutils.dir_util.mkpath')
+        @patch('os.path.isfile')
+        @patch('yaml.load')
+        def test_load_config_creates_download_folder(self,load,isfile,mkpath):
+                #if the config file exists 
+                isfile.return_value=True
+                #and the contents from yaml are these
+                load.return_value=ftorrents.Config("history","url","download")
+                #get get the correct configuration
+                cnf=ftorrents.load_config()
+                mkpath.assert_called_once_with("download")
         
         def test_load_episodes(self): 
                 episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()

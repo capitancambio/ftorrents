@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import urllib2
 from StringIO import StringIO
+from distutils import dir_util
 import gzip
 import pickle
 import pynotify
@@ -46,18 +47,19 @@ def load_config():
                 logger.debug("Config file not found")
                 cnf=create_config()
         else:
-                cnf=yaml.load(config_file()) 
+                cnf=yaml.load(open(config_file())) 
+        dir_util.mkpath(cnf.download_dir)
         logger.info("Configuration loaded %s"%cnf)
         if cnf.rss_url == URL_NOT_SET:
-                raise RutimeError("Please set the rss url in the configuration file (%s)"%config_file())
+                raise RuntimeError("Please set the rss url in the configuration file (%s)"%config_file())
 
         return cnf
 
 def create_config():
         logger.info("Creating default config file %s"%config_file())
         cnf=Config(os.path.join(config_folder(),HISTORY_FILE), URL_NOT_SET,os.path.join(config_folder(),TORRENTS_DIR))
-        distutils.dir_util.mkpath(config_folder())
-        with open(os.path.join(config_folder(),CONFIG_FILE)) as f:
+        dir_util.mkpath(config_folder())
+        with open(os.path.join(config_folder(),CONFIG_FILE),'w') as f:
                 yaml.dump(cnf,f)
         return cnf
 
@@ -71,7 +73,8 @@ class Config:
 
         def __repr__(self):
                 return "%s(%s,%s,%s)" % (self.__class__, self.history_file,self.rss_url,self.download_dir)
-                
+        def __str__(self):
+                return "\n\thistory_file: %s\n\trss_url: %s\n\tdownload_dir: %s\n"%(self.history_file,self.rss_url,self.download_dir)
 
 
 class TorrentDownloader:
@@ -122,7 +125,7 @@ class TorrentDownloader:
                 return history
 
         def dumpHistory(self,history):
-                with open(self.conf.history_file) as f:
+                with open(self.conf.history_file,'w') as f:
                         pickle.dump(history,f)
 
         def downloadEpisode(self,episode):
@@ -230,5 +233,9 @@ class Episode (object):
 
 
 if __name__ == "__main__":
-
-        TorrentDowner(Config()).getTorrents()
+        try:
+                TorrentDownloader(load_config()).download()
+        except RuntimeError as re:
+                print re
+        except Exception as e:
+                raise e
