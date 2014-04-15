@@ -9,6 +9,7 @@ import StringIO
 import distutils
 import urllib2
 import logging
+import config
 #avoid logs during unittesting
 logging.disable(logging.CRITICAL)
 
@@ -53,103 +54,7 @@ RSS_EXAMPLE="""
 class FtorrentsTests(unittest.TestCase):
 
 
-        @patch('os.path.expanduser')
-        def test_check_config_folder(self,home):
-                #check that the config_folder returns the appropriate value
-                home.return_value="/home/user"
-                assert ftorrents.config_folder()=="/home/user/%s"%ftorrents.CONFIG_FOLDER
 
-        def test_check_config_file(self):
-                #check that the config_file returns the appropriate value
-                assert ftorrents.config_file()==os.path.join(ftorrents.config_folder(),"cnf.yml")
-
-        @patch('distutils.dir_util.mkpath')
-        @patch('os.path.isfile')
-        @patch('ftorrents.create_config')
-        def test_load_calls_create(self,create_config,isfile,mkpath):
-                #if the config folder doesn't exsists
-                isfile.return_value=False
-                #and we try to load the configuration
-                ftorrents.load_config()
-                #we try to create the configuration 
-                create_config.assert_called_once_with()
-                
-
-        @patch('distutils.dir_util.mkpath')
-        @patch("yaml.dump")
-        @patch("__builtin__.open")
-        def test_create_config(self,stream,dump,mkpath):
-                conf=ftorrents.create_config()
-                assert conf.history_file==os.path.join(ftorrents.config_folder(),ftorrents.HISTORY_FILE)
-                assert conf.rss_url==ftorrents.URL_NOT_SET
-                assert conf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
-                mkpath.assert_called_once()
-                dump.assert_called_once()
-        
-
-        @patch("__builtin__.open")
-        def test_create_config_yaml(self,stream):
-                mock.mock_open(stream);
-                w=StringIO.StringIO()
-                stream().write.side_effect= lambda t: w.write(t)
-                ftorrents.create_config()
-                cnf=yaml.load(w.getvalue())
-                assert cnf.history_file==os.path.join(ftorrents.config_folder(),ftorrents.HISTORY_FILE)
-                assert cnf.rss_url==ftorrents.URL_NOT_SET
-                assert cnf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
-
-        @patch("__builtin__.open")
-        def test_create_config_yaml(self,stream):
-                mock.mock_open(stream);
-                w=StringIO.StringIO()
-                stream().write.side_effect= lambda t: w.write(t)
-                ftorrents.create_config()
-                cnf=yaml.load(w.getvalue())
-                assert cnf.history_file==os.path.join(ftorrents.config_folder(),ftorrents.HISTORY_FILE)
-                assert cnf.rss_url==ftorrents.URL_NOT_SET
-                assert cnf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
-
-        @patch('distutils.dir_util.mkpath')
-        @patch('os.path.isfile')
-        @patch('yaml.load')
-        def test_load_url_not_set(self,load,isfile,mkpath):
-                #if the config file exists 
-                isfile.return_value=True
-                #and the contents from yaml are these
-                load.return_value=ftorrents.Config("history",ftorrents.URL_NOT_SET,"download")
-                #get the correct configuration and fail because the url is not set
-                try:
-                        cnf=ftorrents.load_config()
-                        self.fail("Exception wasn't thrown")
-                except:
-                        pass
-        @patch("__builtin__.open")
-        @patch('distutils.dir_util.mkpath')
-        @patch('os.path.isfile')
-        @patch('yaml.load')
-        def test_load_config(self,load,isfile,mkpath,open):
-                #if the config file exists 
-                isfile.return_value=True
-                #and the contents from yaml are these
-                load.return_value=ftorrents.Config("history","url","download")
-                #get get the correct configuration
-                cnf=ftorrents.load_config()
-                assert cnf.history_file=="history"
-                assert cnf.rss_url=="url"
-                assert cnf.download_dir=="download"
-
-        @patch("__builtin__.open")
-        @patch('distutils.dir_util.mkpath')
-        @patch('os.path.isfile')
-        @patch('yaml.load')
-        def test_load_config_creates_download_folder(self,load,isfile,mkpath,open):
-                #if the config file exists 
-                isfile.return_value=True
-                #and the contents from yaml are these
-                load.return_value=ftorrents.Config("history","url","download")
-                #get get the correct configuration
-                cnf=ftorrents.load_config()
-                mkpath.assert_called_once_with("download")
         
         def test_load_episodes(self): 
                 episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
@@ -160,7 +65,7 @@ class FtorrentsTests(unittest.TestCase):
         @patch('os.path.isfile')
         def test_load_history_empty(self,isfile):
                 isfile.return_value=False
-                cnf=ftorrents.Config("a","a","a")
+                cnf=config.Config("a","a","a")
                 history=ftorrents.TorrentDownloader(cnf).getHistory()
                 self.assertEqual(0,len(history),"The new history is empty")
 
@@ -172,7 +77,7 @@ class FtorrentsTests(unittest.TestCase):
                 isfile.return_value=True
                 pload.return_value=ftorrents.FeedLoader(RSS_EXAMPLE).load()
                 with patch("__builtin__.open") as stream:
-                        cnf=ftorrents.Config("a","a","a")
+                        cnf=config.Config("a","a","a")
                         #get the pickled history
                         history=ftorrents.TorrentDownloader(cnf).getHistory()
                         #check that is correct
@@ -185,7 +90,7 @@ class FtorrentsTests(unittest.TestCase):
                 result=[]
                 pickle.side_effect=lambda c,f: result.append(c) 
                 with patch("__builtin__.open") as stream:
-                        cnf=ftorrents.Config("a","a","a")
+                        cnf=config.Config("a","a","a")
                         #get the pickled history
                         ftorrents.TorrentDownloader(cnf).dumpHistory(history)
                         #check that is correct
@@ -225,7 +130,7 @@ class FtorrentsTests(unittest.TestCase):
                 ep=ftorrents.Episode()
                 ep.title="title"
                 ep.link="link"
-                cnf=ftorrents.Config("a","a","a")
+                cnf=config.Config("a","a","a")
                 self.assertTrue(ftorrents.TorrentDownloader(cnf).downloadEpisode(ep),"We got the epsisode")
                 stream().write.assert_called_once()
                 link.read.assert_called_once()
@@ -239,12 +144,12 @@ class FtorrentsTests(unittest.TestCase):
                 ep.title="title"
                 ep.link="link"
                 link().__enter__().read.side_effect=err
-                cnf=ftorrents.Config("a","a","a")
+                cnf=config.Config("a","a","a")
                 self.assertFalse(ftorrents.TorrentDownloader(cnf).downloadEpisode(ep),"We didn't got the epsisode")
 
         def test_get_torrents_all(self):
                 #simple config
-                cnf=ftorrents.Config("a",RSS_EXAMPLE,"a")
+                cnf=config.Config("a",RSS_EXAMPLE,"a")
                 downer=ftorrents.TorrentDownloader(cnf)
                 #emtpy history
                 downer.getHistory=mock.Mock(return_value=set())
@@ -256,7 +161,7 @@ class FtorrentsTests(unittest.TestCase):
 
         def test_get_torrents_ignore_history(self):
                 #simple config
-                cnf=ftorrents.Config("a",RSS_EXAMPLE,"a")
+                cnf=config.Config("a",RSS_EXAMPLE,"a")
                 episodes=ftorrents.FeedLoader(RSS_EXAMPLE).load()
                 downer=ftorrents.TorrentDownloader(cnf)
                 #history already has the episodes

@@ -1,81 +1,15 @@
-#!/usr/bin/python
 import urllib2
 from StringIO import StringIO
-from distutils import dir_util
 import gzip
 import pickle
-import pynotify
 import feedparser
-import distutils
-import gtk
 import os
-
 import logging
-import yaml
-#Credenciales showrss
-#ftorrents
-#ftorrents
-logger = logging.getLogger("ftorrents")
-hand =  logging.FileHandler("/tmp/ftorrents.log")
-logger.setLevel(logging.DEBUG)
-hand.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("[%(name)s] - %(levelname)s - %(message)s")
-hand.setFormatter(formatter)
-logger.addHandler(hand)
-hand = logging.StreamHandler()
-hand.setLevel(logging.DEBUG);
-logger.addHandler(hand);
+logger=logging.getLogger("ftorrents")
 
-CONFIG_FOLDER=".ftorrents"
-CONFIG_FILE="cnf.yml"
-URL_NOT_SET="\"http://not_set\""
-HISTORY_FILE="history"
-TORRENTS_DIR="torrent_files"
-
-def config_folder():
-        return os.path.join(os.path.expanduser("~"),CONFIG_FOLDER)
-
-def config_file():
-        return os.path.join(config_folder(),CONFIG_FILE)
-
-def load_config():
-        logger.debug("Loading config")
-        #check if the config folder exsists if not create it
-        cnf=None
-        if not os.path.isfile(config_file()):
-                logger.debug("Config file not found")
-                cnf=create_config()
-        else:
-                cnf=yaml.load(open(config_file())) 
-        dir_util.mkpath(cnf.download_dir)
-        logger.info("Configuration loaded %s"%cnf)
-        if cnf.rss_url == URL_NOT_SET:
-                raise RuntimeError("Please set the rss url in the configuration file (%s)"%config_file())
-
-        return cnf
-
-def create_config():
-        logger.info("Creating default config file %s"%config_file())
-        cnf=Config(os.path.join(config_folder(),HISTORY_FILE), URL_NOT_SET,os.path.join(config_folder(),TORRENTS_DIR))
-        dir_util.mkpath(config_folder())
-        with open(os.path.join(config_folder(),CONFIG_FILE),'w') as f:
-                yaml.dump(cnf,f)
-        return cnf
-
-class Config:
-
-        """configuration items"""
-        def __init__(self,history_file,rss_url,download_dir):
-                self.history_file   = history_file 
-                self.rss_url      = rss_url
-                self.download_dir = download_dir 
-
-        def __repr__(self):
-                return "%s(%s,%s,%s)" % (self.__class__, self.history_file,self.rss_url,self.download_dir)
-        def __str__(self):
-                return "\n\thistory_file: %s\n\trss_url: %s\n\tdownload_dir: %s\n"%(self.history_file,self.rss_url,self.download_dir)
-
+def new(conf):
+        return TorrentDownloader(conf)
 
 class TorrentDownloader:
         def __init__(self,conf):
@@ -231,11 +165,3 @@ class Episode (object):
                 s+="Torrent:"+self.link+"\n"
                 return s
 
-
-if __name__ == "__main__":
-        try:
-                TorrentDownloader(load_config()).download()
-        except RuntimeError as re:
-                print re
-        except Exception as e:
-                raise e
