@@ -7,9 +7,9 @@ setup(
     scripts=['ftorrents.sh'],
     author = "Javier Asensio-Cubero",
     author_email = "capitan.cambio@gmail.com",
-    description = "showsrss.info automatic downloader",
+    description = "showrss.info automatic downloader",
     license = "MIT",
-    keywords = "showsrss.info",
+    keywords = "showrss.info",
     install_requires=[
             "pyyaml>=3.10",
             "feedparser>=5.1.2"
