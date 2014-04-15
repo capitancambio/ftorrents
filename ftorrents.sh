@@ -2,6 +2,7 @@
 import ftorrents.config
 import ftorrents.downloader
 import logging
+
 logger = logging.getLogger("ftorrents")
 logger.setLevel(logging.DEBUG)
 hand = logging.StreamHandler()
