@@ -8,7 +8,7 @@ setup(
     author = "Javier Asensio-Cubero",
     author_email = "capitan.cambio@gmail.com",
     description = "showsrss.info automatic downloader",
-    license = "PSF",
+    license = "MIT",
     keywords = "showsrss.info",
     install_requires=[
             "pyyaml>=3.10",
