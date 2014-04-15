@@ -9,6 +9,10 @@ setup(
     author_email = "capitan.cambio@gmail.com",
     description = "showsrss.info automatic downloader",
     license = "PSF",
-    keywords = "showsrss.info ",
+    keywords = "showsrss.info",
+    install_requires=[
+            "pyyaml>=3.10",
+            "feedparser>=5.1.2"
+            ],
 
 )
