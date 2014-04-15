@@ -1,12 +1,14 @@
 #!/usr/bin/env python
+from setuptools import setup, find_packages
+setup(
+    name = "ftorrents",
+    version = "0.1",
+    packages = find_packages(),
+    scripts=['ftorrents.sh'],
+    author = "Javier Asensio-Cubero",
+    author_email = "capitan.cambio@gmail.com",
+    description = "showsrss.info automatic downloader",
+    license = "PSF",
+    keywords = "showsrss.info ",
 
-from distutils.core import setup
-
-setup(name='ftorrents',
-                version='1.0',
-                description='Simple script to download torrent files from a subscription to rssshow.info',
-                author='Javier Asensio-Cubero',
-                author_email='capitan.cambio@gmail.com',
-                url='github.com/capitancambio/ftorrents',
-                packages=['ftorrents'],
-                )
+)
