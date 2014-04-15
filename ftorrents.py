@@ -29,7 +29,7 @@ logger.addHandler(hand);
 
 CONFIG_FOLDER=".ftorrents"
 CONFIG_FILE="cnf.yml"
-URL_NOT_SET="not_set"
+URL_NOT_SET="\"http://not_set\""
 HISTORY_FILE="history"
 TORRENTS_DIR="torrent_files"
 

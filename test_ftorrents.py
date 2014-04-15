@@ -95,7 +95,7 @@ class FtorrentsTests(unittest.TestCase):
                 ftorrents.create_config()
                 cnf=yaml.load(w.getvalue())
                 assert cnf.history_file==os.path.join(ftorrents.config_folder(),ftorrents.HISTORY_FILE)
-                assert cnf.rss_url=="not_set"
+                assert cnf.rss_url==ftorrents.URL_NOT_SET
                 assert cnf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
 
         @patch("__builtin__.open")
@@ -106,7 +106,7 @@ class FtorrentsTests(unittest.TestCase):
                 ftorrents.create_config()
                 cnf=yaml.load(w.getvalue())
                 assert cnf.history_file==os.path.join(ftorrents.config_folder(),ftorrents.HISTORY_FILE)
-                assert cnf.rss_url=="not_set"
+                assert cnf.rss_url==ftorrents.URL_NOT_SET
                 assert cnf.download_dir==os.path.join(ftorrents.config_folder(),ftorrents.TORRENTS_DIR)
 
         @patch('distutils.dir_util.mkpath')
@@ -123,11 +123,11 @@ class FtorrentsTests(unittest.TestCase):
                         self.fail("Exception wasn't thrown")
                 except:
                         pass
-
+        @patch("__builtin__.open")
         @patch('distutils.dir_util.mkpath')
         @patch('os.path.isfile')
         @patch('yaml.load')
-        def test_load_config(self,load,isfile,mkpath):
+        def test_load_config(self,load,isfile,mkpath,open):
                 #if the config file exists 
                 isfile.return_value=True
                 #and the contents from yaml are these
@@ -138,10 +138,11 @@ class FtorrentsTests(unittest.TestCase):
                 assert cnf.rss_url=="url"
                 assert cnf.download_dir=="download"
 
+        @patch("__builtin__.open")
         @patch('distutils.dir_util.mkpath')
         @patch('os.path.isfile')
         @patch('yaml.load')
-        def test_load_config_creates_download_folder(self,load,isfile,mkpath):
+        def test_load_config_creates_download_folder(self,load,isfile,mkpath,open):
                 #if the config file exists 
                 isfile.return_value=True
                 #and the contents from yaml are these
