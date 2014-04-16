@@ -13,7 +13,7 @@ setup(
     install_requires=[
             "pyyaml>=3.10",
             "feedparser>=5.1.2",
-            "stevedore>=0.10"
+            "stevedore>=0.11"
             ],
 
 )
