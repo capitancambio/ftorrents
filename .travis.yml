@@ -4,6 +4,7 @@ python:
 install: 
         - python setup.py install
         - pip install coveralls
+        - pip install stevedore 
 script: nosetests  --with-coverage --cover-package=ftorrents 
 after_success:
         coveralls
