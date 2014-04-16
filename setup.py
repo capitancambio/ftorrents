@@ -12,7 +12,8 @@ setup(
     keywords = "showrss.info",
     install_requires=[
             "pyyaml>=3.10",
-            "feedparser>=5.1.2"
+            "feedparser>=5.1.2",
+            "stevedore>=0.10"
             ],
 
 )
