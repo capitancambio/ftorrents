@@ -142,7 +142,10 @@ class FeedLoader:
                 eList=[]
                 for entry in feed.entries:
                         e=Episode()
-                        e.id=getattr(entry, namespace+'_episode')
+                        e.id=getattr(entry, namespace+'_episode', None)
+                        #new version of showrss feeds
+                        if not e.id:
+                            e.id=getattr(entry, namespace+'_episode_id', None)
                         e.date=entry.published
                         e.title=entry.title
                         e.link=entry.link;
